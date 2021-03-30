@@ -70,6 +70,7 @@ export default function ProfileDrawer({
   avatar,
   product,
   loading,
+  onClick,
 }) {
   const classes = useStyles();
   if (loading)
@@ -162,6 +163,7 @@ export default function ProfileDrawer({
               size="large"
               className={classes.button}
               startIcon={<AddCircleIcon />}
+              onClick={() => onClick()}
             >
               Add new Product
             </Button>

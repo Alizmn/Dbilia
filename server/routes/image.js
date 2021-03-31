@@ -134,8 +134,12 @@ router.put("/update/:name", auth, upload, async (req, res) => {
     const dupData = await gfs
       // ^--------------Check if the image already exists!
       .collection("userImages")
-      .find({ metadata: req.user._id, filename: req.file.originalname });
-    if (dupData.length !== 0) {
+      .find({ metadata: req.user._id, filename: req.file.originalname })
+      .toArray();
+    if (dupData.length !== 1) {
+      await gfs
+        .collection("userImages")
+        .deleteOne({ metadata: req.user._id, filename: req.file.originalname });
       return res.status(500).end();
     } else {
       await Image.findOneAndUpdate(

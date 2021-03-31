@@ -67,7 +67,6 @@ const ProfilePage = () => {
                 xs={12}
                 lg={3}
                 md={4}
-                spacing={3}
                 key={index}
                 style={{ marginLeft: 50, marginTop: 100 }}
               >

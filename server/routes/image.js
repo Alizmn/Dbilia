@@ -50,28 +50,29 @@ const upload = multer({ storage: storage }).single("userImage");
 //   });
 // });
 
+// Get route to get the titles and image names
 router.get("/", auth, (req, res) => {
   Image.find({ userId: req.user._id }, (error, docs) => {
-    //           ^--- grab the title here
+    if (error) return res.status(500).end();
     return res.status(200).json(docs);
+    //                            ^------ includes image name and title
   });
 });
 
+// Create a readstream for a specific picture
 router.get("/image/:name", auth, (req, res) => {
   gfs
     .collection("userImages")
     .find({ metadata: req.user._id, filename: req.params.name })
-    .toArray((error, files) => {
-      if (error) return res.status(502).json({ error });
-      if (!files || files.length === 0) {
-        return res.status(404).json({
-          message: "No such a file",
-        });
+    .toArray((error, images) => {
+      if (error) return res.status(500).end();
+      if (!images || images.length === 0) {
+        return res.status(404).end();
       }
       let readstream = gfs.createReadStream({
-        filename: files[0].filename,
+        filename: images[0].filename,
       });
-      res.set("Content-Type", files[0].contentType);
+      res.set("Content-Type", images[0].contentType);
       return readstream.pipe(res);
     });
 });

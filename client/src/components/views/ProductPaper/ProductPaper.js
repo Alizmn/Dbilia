@@ -1,24 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
+import React, { useState } from "react";
 import axios from "axios";
-import { IMAGE_SERVER } from "../../Config";
-import IconButton from "@material-ui/core/IconButton";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-import { useSnackbar } from "notistack";
-import { Dialog } from "@material-ui/core";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle";
 
 import PopUp from "../PopUp/PopUp";
+import { IMAGE_SERVER } from "../../Config";
+
+import { useSnackbar } from "notistack";
+
+import { makeStyles } from "@material-ui/core/styles";
+
+import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
+
+import {
+  Dialog,
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Button,
+  Typography,
+  IconButton,
+  DialogTitle,
+  DialogActions,
+} from "@material-ui/core";
 
 const useStyles = makeStyles({
   root: {
@@ -32,19 +37,21 @@ const useStyles = makeStyles({
   },
 });
 
-export default function ProductPaper({ title, imageName, refresh }) {
-  const { enqueueSnackbar } = useSnackbar();
+const ProductPaper = (props) => {
+  const { title, imageName, refresh } = props;
 
+  const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [image, setImage] = useState("");
+
   const [popup, setPopup] = useState(false);
   const [edit, setEdit] = useState(false);
 
+  //  Just Keep it Interesting :D
   const price = () => {
     const rand = 1 + 4 * Math.random();
     return Math.floor(rand);
   };
-  const handleEdit = () => {};
+
   const handleDelete = () => {
     axios
       .delete(`${IMAGE_SERVER}/deleteImage/${imageName}`)
@@ -126,4 +133,6 @@ export default function ProductPaper({ title, imageName, refresh }) {
       </Card>
     </>
   );
-}
+};
+
+export default ProductPaper;

@@ -1,33 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
+
+import { IMAGE_SERVER } from "../../Config";
 
 import {
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
   Paper,
   CardMedia,
-  CardContent,
-  Avatar,
   Typography,
-  Grid,
-  CircularProgress,
   InputLabel,
   FormControl,
   OutlinedInput,
-  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
 } from "@material-ui/core";
 
-import { Button } from "@material-ui/core";
-
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import { makeStyles } from "@material-ui/core/styles";
-import { IMAGE_SERVER } from "../../Config";
-import axios from "axios";
 import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
@@ -50,21 +40,23 @@ const useStyles = makeStyles((theme) => ({
 const PopUp = (props) => {
   const classes = useStyles();
   const fileInput = useRef(null);
+
   const { enqueueSnackbar } = useSnackbar();
 
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [title, setTitle] = useState("");
+
   useEffect(() => {
     if (props.title) setTitle(props.title);
     if (props.image) setPreviewUrl(props.image);
-  }, []);
+  }, [props.title, props.image]);
 
   const handleOnDrop = (event) => {
-    //prevent the browser from opening the image
+    //Prevent the browser from opening the image
     event.preventDefault();
     event.stopPropagation();
-    //grab the image file
+    //Grab the image file
     let imageFile = event.dataTransfer.files[0];
     handleFile(imageFile);
   };
@@ -73,7 +65,9 @@ const PopUp = (props) => {
     setImage(file);
     file && file !== null && setPreviewUrl(URL.createObjectURL(file));
   };
+
   const handleSubmit = (edit) => {
+    //                   ^----------Since update and upload are two routes, the EDIT separate them
     if (!title)
       return enqueueSnackbar("Please Provide a Title!", { variant: "error" });
     if (!previewUrl)
@@ -102,7 +96,6 @@ const PopUp = (props) => {
             },
           })
           .then(() => {
-            // setRefresh(!refresh);
             enqueueSnackbar("Uploaded Successfully!", { variant: "success" });
             props.refresh();
             props.onClose();

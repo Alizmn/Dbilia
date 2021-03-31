@@ -1,23 +1,23 @@
 import React from "react";
+
 import { makeStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import AppBar from "@material-ui/core/AppBar";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
+import {
+  Avatar,
+  Button,
+  CircularProgress,
+  Drawer,
+  CssBaseline,
+  Toolbar,
+  List,
+  Divider,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@material-ui/core";
 
 import SupervisedUserCircleIcon from "@material-ui/icons/SupervisedUserCircle";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import EmailIcon from "@material-ui/icons/Email";
-import { Avatar, Button, CircularProgress } from "@material-ui/core";
-import { green, blue } from "@material-ui/core/colors";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import PermMediaIcon from "@material-ui/icons/PermMedia";
 import MonetizationOnIcon from "@material-ui/icons/MonetizationOn";
@@ -27,9 +27,6 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
   },
   drawer: {
     zIndex: 0,
@@ -41,10 +38,6 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerContainer: {
     overflow: "auto",
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(3),
   },
   avatar: {
     display: "flex",
@@ -64,15 +57,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ProfileDrawer({
-  name,
-  account,
-  email,
-  avatar,
-  product,
-  loading,
-  onClick,
-}) {
+const ProfileDrawer = (props) => {
+  const { name, account, email, avatar, product, loading, onClick } = props;
   const classes = useStyles();
   if (loading)
     return (
@@ -164,7 +150,7 @@ export default function ProfileDrawer({
               size="large"
               className={classes.button}
               startIcon={<AddCircleIcon />}
-              onClick={() => onClick()}
+              onClick={onClick}
             >
               Add new Product
             </Button>
@@ -173,4 +159,5 @@ export default function ProfileDrawer({
       </Drawer>
     </div>
   );
-}
+};
+export default ProfileDrawer;

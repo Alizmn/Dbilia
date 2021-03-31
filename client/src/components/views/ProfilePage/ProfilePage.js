@@ -31,6 +31,7 @@ import SaveIcon from "@material-ui/icons/Save";
 
 import ProfileDrawer from "../ProfileDrawer/ProfileDrawer";
 import PopUp from "../PopUp/PopUp";
+import ProductPaper from "../ProductPaper/ProductPaper";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -101,24 +102,33 @@ function ProfilePage() {
   const { enqueueSnackbar } = useSnackbar();
 
   const [popup, setPopup] = useState(false);
+  const [products, setProducts] = useState([]);
 
   const classes = useStyles();
   const user = useSelector((state) => state.user);
 
   const fileInput = useRef(null);
 
+  let data;
+
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
-    setTitle("");
-    axios // the url can use directly without get req but it's good to have it for error handling
-      .get(`${IMAGE_SERVER}/`)
-      .then((doc) => {
-        if (doc.status === 200) {
-          setPreviewUrl(`${window.location.origin}${IMAGE_SERVER}`);
-          setServerTitle(doc.headers.title);
-        }
-      })
-      .catch((error) => console.log(error));
+    axios.get(`${IMAGE_SERVER}/`).then((result) => {
+      setProducts(result.data);
+      console.log("====================================");
+      console.log(result.data);
+      console.log("====================================");
+    });
+    // setTitle("");
+    // axios // the url can use directly without get req but it's good to have it for error handling
+    //   .get(`${IMAGE_SERVER}/`)
+    //   .then((doc) => {
+    //     if (doc.status === 200) {
+    //       setPreviewUrl(`${window.location.origin}${IMAGE_SERVER}`);
+    //       setServerTitle(doc.headers.title);
+    //     }
+    //   })
+    //   .catch((error) => console.log(error));
   }, [refresh]);
 
   const handleFile = (file) => {
@@ -193,16 +203,46 @@ function ProfilePage() {
           account={user.userData.isAdmin ? "Admin" : "Regular User"}
           email={user.userData.email}
           avatar={user.userData.image}
-          product={"10"}
+          product={products.length}
           onClick={() => setPopup(true)}
         />
       )}
+
       <PopUp
         open={popup}
         onClose={() => setPopup(false)}
-        cancel={() => setPopup(false)}
-        submit={() => setPopup(false)}
+        refresh={() => setRefresh(!refresh)}
       />
+
+      <Grid
+        container
+        style={{
+          marginLeft: 300,
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        {products
+          ? products.map((product, index) => (
+              <Grid
+                key
+                item
+                xs={12}
+                lg={3}
+                md={4}
+                spacing={3}
+                key={index}
+                style={{ marginLeft: 50, marginTop: 100 }}
+              >
+                <ProductPaper
+                  title={product.title}
+                  imageName={product.image}
+                  refresh={() => setRefresh(!refresh)}
+                />
+              </Grid>
+            ))
+          : ""}
+      </Grid>
     </>
   );
 }

@@ -26,6 +26,9 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { makeStyles } from "@material-ui/core/styles";
+import { IMAGE_SERVER } from "../../Config";
+import axios from "axios";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
   media: {
@@ -47,10 +50,15 @@ const useStyles = makeStyles((theme) => ({
 const PopUp = (props) => {
   const classes = useStyles();
   const fileInput = useRef(null);
+  const { enqueueSnackbar } = useSnackbar();
 
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [title, setTitle] = useState("");
+  useEffect(() => {
+    if (props.title) setTitle(props.title);
+    if (props.image) setPreviewUrl(props.image);
+  }, []);
 
   const handleOnDrop = (event) => {
     //prevent the browser from opening the image
@@ -65,15 +73,48 @@ const PopUp = (props) => {
     setImage(file);
     file && file !== null && setPreviewUrl(URL.createObjectURL(file));
   };
+  const handleSubmit = () => {
+    if (!title)
+      return enqueueSnackbar("Please Provide a Title!", { variant: "error" });
+    if (!previewUrl)
+      return enqueueSnackbar("Please Add a Picture!", { variant: "error" });
+    let formData = new FormData();
+    if (image) formData.append("userImage", image);
+    formData.append("title", title);
+
+    axios
+      .post(`${IMAGE_SERVER}/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(() => {
+        // setRefresh(!refresh);
+        enqueueSnackbar("Uploaded Successfully!", { variant: "success" });
+        props.refresh();
+        props.onClose();
+      })
+      .catch(() =>
+        enqueueSnackbar(
+          "It seems you alrady have the picture! Please double check and try again!",
+          {
+            variant: "error",
+          }
+        )
+      );
+  };
 
   return (
     <Dialog
       open={props.open}
       keepMounted
       onEnter={() => {
-        setImage(null);
-        setPreviewUrl("");
-        fileInput.current.value = null;
+        if (!props.title) {
+          setImage(null);
+          setPreviewUrl("");
+          setTitle("");
+          fileInput.current.value = null;
+        }
       }}
       onClose={props.onClose}
       aria-labelledby="alert-dialog-slide-title"
@@ -121,10 +162,10 @@ const PopUp = (props) => {
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button autoFocus onClick={props.cancel} color="secondary">
+        <Button autoFocus onClick={props.onClose} color="secondary">
           Cancel
         </Button>
-        <Button onClick={props.submit} color="primary">
+        <Button onClick={() => handleSubmit()} color="primary">
           Submit
         </Button>
       </DialogActions>

@@ -28,27 +28,9 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage: storage }).single("userImage");
 
-// Get picture and title by creating a readstream
-// router.get("/", auth, (req, res) => {
-//   Image.find({ userId: req.user._id }, (error, docs) => {
-//     //           ^--- grab the title here
-//     gfs
-//       .collection("userImages")
-//       .find({ metadata: req.user._id, filename: })
-//       //           ^--- grab the image here
-//       .toArray((error, docs) => {
-//         if (error)
-//           return res.status(502).json({ error: "Something went wrong!" });
-//         if (!docs || docs.length === 0)
-//           return res.status(204).json({ message: "No picture available!" });
-//         let readstream = gfs.createReadStream({ filename: docs[0].filename });
-//         res.set("Content-Type", docs[0].contentType);
-//         res.set("Title", doc[0].title);
-//         return readstream.pipe(res);
-//         //           ^--- create live link for client
-//       });
-//   });
-// });
+//                  ============
+//                 | GET ROUTES |
+//                  ============
 
 // Get route to get the titles and image names
 router.get("/", auth, (req, res) => {
@@ -59,7 +41,7 @@ router.get("/", auth, (req, res) => {
   });
 });
 
-// Create a readstream for a specific picture
+// Create a readstream to get a specific picture
 router.get("/image/:name", auth, (req, res) => {
   gfs
     .collection("userImages")
@@ -77,32 +59,23 @@ router.get("/image/:name", auth, (req, res) => {
     });
 });
 
-// Delete  the userImage and Image itself
-// router.delete("/deleteImage", auth, async (req, res) => {
-//   await gfs
-//     .collection("userImages")
-//     .findOneAndDelete({ metadata: req.user._id }, (error, doc) => {
-//       if (error) return res.status(502).json({ error });
-//       Image.findOneAndDelete({ userId: req.user._id }, (error, doc) => {
-//         if (error) return res.status(502).json({ error });
-//         return res.status(200).end();
-//       });
-//     });
-// });
-
+//                  ==============
+//                 | DELETE ROUTE |
+//                  ==============
+// Delete specific photo
 router.delete("/deleteImage/:name", auth, async (req, res) => {
   await Image.findOneAndDelete(
     { userId: req.user._id, image: req.params.name },
     (error, doc) => {
       if (error) {
-        return res.status(502).json({ error });
+        return res.status(500).end();
       } else {
         gfs
           .collection("userImages")
           .findOneAndDelete(
             { metadata: req.user._id, filename: req.params.name },
             (error, file) => {
-              if (error) res.status(502).json({ error });
+              if (error) return res.status(500).end();
               return res.status(200).end();
             }
           );
@@ -111,28 +84,10 @@ router.delete("/deleteImage/:name", auth, async (req, res) => {
   );
 });
 
-// Upload OR modify the image
-// router.patch("/upload", auth, upload, async (req, res) => {
-//   await Image.findOneAndUpdate(
-//     //  ^------update the user first
-//     { userId: req.user._id },
-//     {
-//       image: req.file.filename,
-//       title: req.body.title,
-//     },
-//     { upsert: true, returnNewDocument: true },
-//     (error, doc) => {
-//       gfs
-//         .collection("userImages")
-//         .deleteOne({ filename: { $nin: [req.file.filename] } });
-//       //  ^------update the userImage and delete previous one
-
-//       if (error) return res.status(500).json({ error });
-//       return res.status(200).json(doc);
-//     }
-//   );
-// });
-
+//                  ==============
+//                 | UPLOAD ROUTE |
+//                  ==============
+// Upload new photo
 router.post("/upload", auth, upload, async (req, res) => {
   await Image.find(
     {
@@ -142,6 +97,7 @@ router.post("/upload", auth, upload, async (req, res) => {
     (error, docs) => {
       if (error) return res.status(500).end();
       if (docs.length > 0) {
+        //   ^---------------if there is a file with the same name for this user, it wouldn't go further
         gfs
           .collection("userImages")
           .deleteOne({ filename: req.file.originalname });
@@ -163,18 +119,20 @@ router.post("/upload", auth, upload, async (req, res) => {
   );
 });
 
+//                  ==============
+//                 | UPDATE ROUTE |
+//                  ==============
+// Update the card if title OR image change
 router.put("/update/:name", auth, upload, async (req, res) => {
-  // Image.findOne(
-  //   { userId: req.user._id, image: req.params.name },
-  //   (error, data) => {
   if (!req.file) {
-    console.log("IF aval", req.body.title, req.user._id, req.params.name);
+    // ^--------------The case for changing the title ONLY
     await Image.findOneAndUpdate(
       { userId: req.user._id, image: req.params.name },
       { $set: { title: req.body.title } }
     );
   } else {
     const dupData = await gfs
+      // ^--------------Check if the image already exists!
       .collection("userImages")
       .find({ metadata: req.user._id, filename: req.file.originalname });
     if (dupData.length !== 0) {
@@ -190,35 +148,6 @@ router.put("/update/:name", auth, upload, async (req, res) => {
     }
   }
   return res.status(200).end();
-  // }
-  // );
-  // await Image.find(
-  //   {
-  //     image: req.file.originalname,
-  //     userId: req.user._id,
-  //   },
-  //   (error, docs) => {
-  //     if (error) return res.status(500).end();
-  //     if (docs.length > 0) {
-  //       gfs
-  //         .collection("userImages")
-  //         .deleteOne({ filename: req.file.originalname });
-  //       return res.status(500).end();
-  //     } else {
-  //       const post = new Image({
-  //         image: req.file.filename,
-  //         title: req.body.title,
-  //         userId: req.user._id,
-  //       });
-  //       try {
-  //         post.save();
-  //       } catch (error) {
-  //         return res.status(500).end();
-  //       }
-  //       return res.status(200).end();
-  //     }
-  //   }
-  // );
 });
 
 module.exports = router;

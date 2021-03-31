@@ -162,4 +162,62 @@ router.post("/upload", auth, upload, async (req, res) => {
   );
 });
 
+router.put("/update/:name", auth, upload, async (req, res) => {
+  // Image.findOne(
+  //   { userId: req.user._id, image: req.params.name },
+  //   (error, data) => {
+  if (!req.file) {
+    console.log("IF aval", req.body.title, req.user._id, req.params.name);
+    await Image.findOneAndUpdate(
+      { userId: req.user._id, image: req.params.name },
+      { $set: { title: req.body.title } }
+    );
+  } else {
+    const dupData = await gfs
+      .collection("userImages")
+      .find({ metadata: req.user._id, filename: req.file.originalname });
+    if (dupData.length !== 0) {
+      return res.status(500).end();
+    } else {
+      await Image.findOneAndUpdate(
+        { userId: req.user._id, image: req.params.name },
+        { $set: { title: req.body.title, image: req.file.originalname } }
+      );
+      await gfs
+        .collection("userImages")
+        .deleteOne({ metadata: req.user._id, filename: req.params.name });
+    }
+  }
+  return res.status(200).end();
+  // }
+  // );
+  // await Image.find(
+  //   {
+  //     image: req.file.originalname,
+  //     userId: req.user._id,
+  //   },
+  //   (error, docs) => {
+  //     if (error) return res.status(500).end();
+  //     if (docs.length > 0) {
+  //       gfs
+  //         .collection("userImages")
+  //         .deleteOne({ filename: req.file.originalname });
+  //       return res.status(500).end();
+  //     } else {
+  //       const post = new Image({
+  //         image: req.file.filename,
+  //         title: req.body.title,
+  //         userId: req.user._id,
+  //       });
+  //       try {
+  //         post.save();
+  //       } catch (error) {
+  //         return res.status(500).end();
+  //       }
+  //       return res.status(200).end();
+  //     }
+  //   }
+  // );
+});
+
 module.exports = router;

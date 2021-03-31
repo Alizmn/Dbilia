@@ -73,7 +73,7 @@ const PopUp = (props) => {
     setImage(file);
     file && file !== null && setPreviewUrl(URL.createObjectURL(file));
   };
-  const handleSubmit = () => {
+  const handleSubmit = (edit) => {
     if (!title)
       return enqueueSnackbar("Please Provide a Title!", { variant: "error" });
     if (!previewUrl)
@@ -82,26 +82,39 @@ const PopUp = (props) => {
     if (image) formData.append("userImage", image);
     formData.append("title", title);
 
-    axios
-      .post(`${IMAGE_SERVER}/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then(() => {
-        // setRefresh(!refresh);
-        enqueueSnackbar("Uploaded Successfully!", { variant: "success" });
-        props.refresh();
-        props.onClose();
-      })
-      .catch(() =>
-        enqueueSnackbar(
-          "It seems you alrady have the picture! Please double check and try again!",
-          {
-            variant: "error",
-          }
-        )
-      );
+    edit
+      ? axios
+          .put(`${IMAGE_SERVER}/update/${props.imageName}`, formData)
+          .then(() => {
+            enqueueSnackbar("Editted Successfully!", { variant: "success" });
+            props.refresh();
+            props.onClose();
+          })
+          .catch(() => {
+            enqueueSnackbar("Something went wrong!", {
+              variant: "error",
+            });
+          })
+      : axios
+          .post(`${IMAGE_SERVER}/upload`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then(() => {
+            // setRefresh(!refresh);
+            enqueueSnackbar("Uploaded Successfully!", { variant: "success" });
+            props.refresh();
+            props.onClose();
+          })
+          .catch(() =>
+            enqueueSnackbar(
+              "It seems you alrady have the picture! Please double check and try again!",
+              {
+                variant: "error",
+              }
+            )
+          );
   };
 
   return (
@@ -109,11 +122,14 @@ const PopUp = (props) => {
       open={props.open}
       keepMounted
       onEnter={() => {
+        setImage(null);
+        fileInput.current.value = null;
         if (!props.title) {
-          setImage(null);
           setPreviewUrl("");
           setTitle("");
-          fileInput.current.value = null;
+        } else {
+          setPreviewUrl(props.image);
+          setTitle(props.title);
         }
       }}
       onClose={props.onClose}
@@ -121,7 +137,7 @@ const PopUp = (props) => {
       aria-describedby="alert-dialog-slide-description"
     >
       <DialogTitle style={{ cursor: "move" }} id="draggable-dialog-title">
-        Please choose a picture and along with a title!
+        Please choose a picture along with a title!
       </DialogTitle>
       <DialogContent>
         <div
@@ -165,7 +181,10 @@ const PopUp = (props) => {
         <Button autoFocus onClick={props.onClose} color="secondary">
           Cancel
         </Button>
-        <Button onClick={() => handleSubmit()} color="primary">
+        <Button
+          onClick={() => handleSubmit(Boolean(props.title))}
+          color="primary"
+        >
           Submit
         </Button>
       </DialogActions>

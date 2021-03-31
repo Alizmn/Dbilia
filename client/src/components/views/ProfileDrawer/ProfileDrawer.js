@@ -60,6 +60,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     marginTop: "1%",
     marginBottom: "1%",
+    borderRadius: 15,
   },
 }));
 

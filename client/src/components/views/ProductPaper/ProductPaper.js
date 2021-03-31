@@ -86,6 +86,7 @@ export default function ProductPaper({ title, imageName, refresh }) {
         onClose={() => setEdit(false)}
         refresh={refresh}
         title={title}
+        imageName={imageName}
         image={`${window.location.origin}${IMAGE_SERVER}/image/${imageName}`}
       />
       <Card className={classes.root}>
